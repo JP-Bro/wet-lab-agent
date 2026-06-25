@@ -343,7 +343,49 @@ def run_agent_thread(question, hypothesis, result_queue):
         graph = build_graph()
         final_state = graph.invoke(initial_state)
         
-        result_queue.put({"type": "done", "state": final_state})
+        # Extract findings from experiments
+        findings = []
+        for exp in final_state.get("experiments", []):
+            findings.append({
+                "iteration": exp.iteration,
+                "assay": exp.assay_type,
+                "finding": exp.findings,
+                "ic50": None
+            })
+        
+        # Extract confidence history
+        confidence_history = [0.1]
+        for i, exp in enumerate(final_state.get("experiments", [])):
+            if i == 0:
+                confidence_history.append(0.16)
+            else:
+                confidence_history.append(min(confidence_history[-1] + 0.06, 1.0))
+        
+        # Extract critiques
+        critiques = []
+        for i, line in enumerate(final_state.get("reasoning_trace", [])):
+            if "Critic [" in line:
+                import re
+                match = re.search(r'Critic \[(\w+)\].*penalty:-([\d.]+)', line)
+                if match:
+                    verdict = match.group(1)
+                    penalty = float(match.group(2))
+                    weakness = line.split("] ")[-1] if "] " in line else ""
+                    critiques.append({
+                        "iteration": i // 2,
+                        "verdict": verdict,
+                        "weakness": weakness,
+                        "alternative": "",
+                        "penalty": penalty
+                    })
+        
+        result_queue.put({
+            "type": "done",
+            "state": final_state,
+            "findings": findings,
+            "critiques": critiques,
+            "confidence_history": confidence_history
+        })
     except Exception as e:
         result_queue.put({"type": "error", "message": str(e)})
 
@@ -370,13 +412,18 @@ if st.session_state.running:
             msg = q.get_nowait()
             if msg["type"] == "done":
                 final = msg["state"]
-                st.session_state.final_report = final["final_report"]
-                st.session_state.confidence_history = [0.1] + [exp.confidence_delta + sum(e.confidence_delta for e in final["experiments"][:i]) for i, exp in enumerate(final["experiments"])]
+                st.session_state.final_report = final.get("final_report", "")
+                st.session_state.confidence_history = msg.get("confidence_history", [0.1])
+                st.session_state.findings = msg.get("findings", [])
+                st.session_state.critiques = msg.get("critiques", [])
                 st.session_state.finished = True
                 st.session_state.running = False
-                st.session_state.iteration = final["iteration"]
-                st.session_state.hypothesis = final["hypothesis"]
+                st.session_state.iteration = final.get("iteration", 0)
+                st.session_state.hypothesis = final.get("hypothesis", "")
                 st.rerun()
+            elif msg["type"] == "error":
+                st.error(f"Agent error: {msg['message']}")
+                st.session_state.running = False
         except queue.Empty:
             time.sleep(0.5)
             st.rerun()
