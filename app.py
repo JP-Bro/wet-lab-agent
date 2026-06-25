@@ -358,11 +358,13 @@ st.markdown("""
 
 # ── Stats row ──────────────────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 with c1:
     conf = st.session_state.confidence_history[-1] if st.session_state.confidence_history else 0.0
+    conf_percent = int(conf * 100)  # ← Fix: multiply by 100
     st.markdown(f"""
     <div class='stat-card'>
-        <div class='stat-number'>{conf:.0%}</div>
+        <div class='stat-number'>{conf_percent}%</div>
         <div class='stat-label'>Confidence</div>
     </div>""", unsafe_allow_html=True)
 with c2:
@@ -494,6 +496,7 @@ with tab3:
         st.markdown("#### Critic Agent Analysis")
         for c in st.session_state.critiques:
             verdict_color = {"strong": "#3fb950", "moderate": "#f0883e", "weak": "#ff7b72"}.get(c.get('verdict','weak'), '#8b949e')
+            penalty = c.get('penalty', 0.12)  # ← Fix: default to 0.12
             st.markdown(f"""
             <div class='critic-card'>
                 <div class='critic-verdict'>
@@ -501,13 +504,13 @@ with tab3:
                     <span style='color:{verdict_color};'>
                         {c.get('verdict','?').upper()} EVIDENCE
                     </span>
-                    · penalty: -{c.get('penalty', 0):.2f}
+                    · penalty: -{penalty:.2f}
                 </div>
                 <div style='color:#e6edf3;font-size:0.88rem;margin-top:8px;'>
                     <strong style='color:#8b949e;'>Weakness:</strong> {c.get('weakness','—')}
                 </div>
                 <div style='color:#e6edf3;font-size:0.88rem;margin-top:4px;'>
-                    <strong style='color:#8b949e;'>Alternative:</strong> {c.get('alternative','—')[:200]}
+                    <strong style='color:#8b949e;'>Alternative:</strong> {c.get('alternative','—')}
                 </div>
             </div>""", unsafe_allow_html=True)
     else:
