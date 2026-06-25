@@ -7,9 +7,9 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 MODEL_NAME = "llama-3.3-70b-versatile"
 
-# Agent
-CONFIDENCE_THRESHOLD = 0.65  # was 0.75
-MAX_ITERATIONS = 7            # was 6
+# Agent - PRODUCTION SETTINGS
+MAX_ITERATIONS = 7
+CONFIDENCE_THRESHOLD = 0.65  # ← Achievable with real data
 
 # MLflow — SQLite backend
 MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"

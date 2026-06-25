@@ -423,7 +423,7 @@ with tab1:
                 height=280,
                 showlegend=False
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.markdown("""
             <div style='background:#161b22;border:1px solid #21262d;border-radius:12px;
