@@ -358,10 +358,9 @@ st.markdown("""
 
 # ── Stats row ──────────────────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
-c1, c2, c3, c4 = st.columns(4)
 with c1:
     conf = st.session_state.confidence_history[-1] if st.session_state.confidence_history else 0.0
-    conf_percent = int(conf * 100)  # ← Fix: multiply by 100
+    conf_percent = int(conf * 100)
     st.markdown(f"""
     <div class='stat-card'>
         <div class='stat-number'>{conf_percent}%</div>
@@ -387,8 +386,6 @@ with c4:
         <div class='stat-number' style='color:{color};font-size:1.3rem;'>{status}</div>
         <div class='stat-label'>Status</div>
     </div>""", unsafe_allow_html=True)
-
-st.markdown("<br/>", unsafe_allow_html=True)
 
 # ── Main tabs ──────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Live Monitor", "🔬 Experiments", "🔍 Critic Analysis", "📄 Final Report"])
@@ -496,21 +493,14 @@ with tab3:
         st.markdown("#### Critic Agent Analysis")
         for c in st.session_state.critiques:
             verdict_color = {"strong": "#3fb950", "moderate": "#f0883e", "weak": "#ff7b72"}.get(c.get('verdict','weak'), '#8b949e')
-            penalty = c.get('penalty', 0.12)  # ← Fix: default to 0.12
+            penalty = c.get('penalty', 0.12)
             st.markdown(f"""
             <div class='critic-card'>
                 <div class='critic-verdict'>
-                    Iteration {c['iteration']} ·
-                    <span style='color:{verdict_color};'>
-                        {c.get('verdict','?').upper()} EVIDENCE
-                    </span>
-                    · penalty: -{penalty:.2f}
+                    Iteration {c['iteration']} · <span style='color:{verdict_color};'>{c.get('verdict','?').upper()} EVIDENCE</span> · penalty: -{penalty:.2f}
                 </div>
                 <div style='color:#e6edf3;font-size:0.88rem;margin-top:8px;'>
                     <strong style='color:#8b949e;'>Weakness:</strong> {c.get('weakness','—')}
-                </div>
-                <div style='color:#e6edf3;font-size:0.88rem;margin-top:4px;'>
-                    <strong style='color:#8b949e;'>Alternative:</strong> {c.get('alternative','—')}
                 </div>
             </div>""", unsafe_allow_html=True)
     else:
@@ -519,7 +509,7 @@ with tab3:
             <div style='font-size:2rem;margin-bottom:12px;'>🔍</div>
             <div>Critic analysis will appear after each iteration.</div>
         </div>""", unsafe_allow_html=True)
-
+        
 # ── Tab 4: Report ──────────────────────────────────────────────────────────────
 with tab4:
     if st.session_state.final_report:
